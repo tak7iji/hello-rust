@@ -3,19 +3,20 @@ use std::time::Duration;
 use std::str;
 use std::io::{BufRead, BufReader, Write};
 
-#[cfg(any(target_os = "unix", target_os = "wasi"))]
+#[cfg(any(unix, wasi))]
 fn get_and_go(stream: TcpStream) {
   let fd = stream.as_raw_fd();
 
   disp_unix_or_wasi(fd);
 }
 
-#[cfg(target_os = "unix")]
-use std::os::linux::io::{RawFd, AsRawFd, FromRawFd};
-#[cfg(target_os = "wasi")]
+#[cfg(all(unix))]
+use std::os::unix::io::{RawFd, AsRawFd, FromRawFd};
+
+#[cfg(all(wasi))]
 use std::os::wasi::io::{RawFd, AsRawFd, FromRawFd};
 
-#[cfg(any(target_os = "unix", target_os = "wasi"))]
+#[cfg(any(unix, wasi))]
 #[no_mangle]
 fn disp_unix_or_wasi(fd: RawFd) {
   let stream: TcpStream;
@@ -26,14 +27,14 @@ fn disp_unix_or_wasi(fd: RawFd) {
   disp(stream);
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(all(windows))]
 fn get_and_go(stream: TcpStream) {
   let fd = stream.as_raw_socket();
 
   disp_win(fd);  
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(all(windows))]
 use std::os::windows::io::{RawSocket, AsRawSocket, FromRawSocket};
 #[cfg(target_os = "windows")]
 #[no_mangle]
